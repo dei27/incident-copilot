@@ -1,0 +1,6 @@
+{
+  "Title": "Respuesta HTTP 429 en un endpoint sintético",
+  "Symptoms": "El cliente recibe respuestas 429 durante una ráfaga de solicitudes y el flujo no completa la operación.",
+  "TechnicalContext": "Servicio local de pruebas con un límite sintético de 20 solicitudes por minuto; no hay reintentos configurados.",
+  "Logs": "2026-08-13T11:20:00Z response_status=429 route=/synthetic/report retry_after=30\n2026-08-13T11:20:01Z response_status=429 route=/synthetic/report"
+}

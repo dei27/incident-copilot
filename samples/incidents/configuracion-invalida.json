@@ -1,0 +1,6 @@
+{
+  "Title": "Configuración sintética incompleta al iniciar",
+  "Symptoms": "La aplicación no puede ejecutar el análisis porque falta un valor de configuración no sensible.",
+  "TechnicalContext": "Entorno local de pruebas con una opción obligatoria llamada SyntheticEndpoint ausente.",
+  "Logs": "2026-08-13T14:10:00Z startup_validation failed option=SyntheticEndpoint reason=missing"
+}

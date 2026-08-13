@@ -65,7 +65,9 @@ La pantalla inicial implementada es un formulario Razor limpio y funcional con t
 
 ## Ejemplos sintéticos
 
-Se prevén casos públicos de timeout de API, respuesta HTTP 429, consulta SQL lenta, excepción null y configuración inválida. Los ejemplos deberán ser plausibles, completamente sintéticos y no tomar información de empleadores reales.
+El repositorio incluye casos públicos completamente sintéticos de timeout de API, respuesta HTTP 429, consulta SQL lenta, excepción de referencia nula y configuración inválida en `samples/incidents/`. No contienen datos de empleadores ni credenciales reales.
+
+La evaluación automatizada comprueba que estén presentes los cinco archivos esperados, que cada entrada cumpla el contrato y sus límites, que no contenga patrones de secretos conocidos y que el parser rechace JSON inválido. La calidad semántica de las hipótesis y los pasos de diagnóstico requiere revisión manual; no se publican benchmarks ni puntuaciones científicas.
 
 ## Testing
 
@@ -95,4 +97,4 @@ El proyecto no determinará la causa raíz, no garantizará que la redacción de
 
 ## Estado del proyecto
 
-En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider y el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito. Las pruebas, samples y CI todavía no están implementados.
+En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider, el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito, pruebas unitarias y de integración, y samples sintéticos evaluados estructuralmente. La CI todavía no está implementada.

@@ -1,0 +1,6 @@
+{
+  "Title": "Consulta SQL sintética con latencia elevada",
+  "Symptoms": "La pantalla de resultados tarda más de lo habitual cuando se solicita un conjunto mediano de registros.",
+  "TechnicalContext": "Base de datos local de pruebas con una tabla sintética de eventos; el filtro usa dos columnas y devuelve paginación.",
+  "Logs": "2026-08-13T12:05:00Z query_name=list_events duration_ms=2840 rows=1200\n2026-08-13T12:05:03Z query_name=list_events duration_ms=3010 rows=1200"
+}

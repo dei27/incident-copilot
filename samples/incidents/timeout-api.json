@@ -1,0 +1,6 @@
+{
+  "Title": "Timeout al consultar una API sintética",
+  "Symptoms": "Las solicitudes a un servicio local superan el tiempo esperado y algunas terminan con timeout.",
+  "TechnicalContext": "Aplicación web de pruebas; el cliente usa un timeout de 5 segundos y el servicio remoto es sintético.",
+  "Logs": "2026-08-13T10:15:00Z request_started route=/synthetic/items\n2026-08-13T10:15:05Z request_timeout elapsed_ms=5000"
+}

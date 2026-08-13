@@ -1,0 +1,6 @@
+{
+  "Title": "Excepción de referencia nula en flujo sintético",
+  "Symptoms": "Una operación de resumen termina con una excepción y la respuesta HTTP es 500.",
+  "TechnicalContext": "Servicio local de pruebas; el flujo transforma un objeto de configuración opcional antes de construir el resumen.",
+  "Logs": "2026-08-13T13:40:00Z route=/synthetic/summary status=500\nSystem.NullReferenceException: synthetic object was not initialized"
+}
