@@ -23,12 +23,12 @@ builder.Services.AddOptions<LlmOptions>()
 builder.Services.AddSingleton<IValidateOptions<LlmOptions>, LlmOptionsValidator>();
 builder.Services.AddSingleton<ISecretRedactor, SecretRedactor>();
 builder.Services.AddSingleton<IncidentAnalysisParser>();
-builder.Services.AddHttpClient<OpenAiLlmIncidentAnalyzer>(client =>
+builder.Services.AddHttpClient<OpenRouterLlmIncidentAnalyzer>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 builder.Services.AddTransient<ILlmIncidentAnalyzer>(services =>
-    services.GetRequiredService<OpenAiLlmIncidentAnalyzer>());
+    services.GetRequiredService<OpenRouterLlmIncidentAnalyzer>());
 builder.Services.AddRazorPages();
 
 var app = builder.Build();

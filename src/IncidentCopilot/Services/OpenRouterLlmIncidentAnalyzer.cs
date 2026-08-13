@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace IncidentCopilot.Services;
 
-public sealed class OpenAiLlmIncidentAnalyzer : ILlmIncidentAnalyzer
+public sealed class OpenRouterLlmIncidentAnalyzer : ILlmIncidentAnalyzer
 {
     private const string SystemInstructions = """
         Analiza únicamente la evidencia suministrada de un incidente técnico sintético.
@@ -62,7 +62,7 @@ public sealed class OpenAiLlmIncidentAnalyzer : ILlmIncidentAnalyzer
     private readonly ISecretRedactor _secretRedactor;
     private readonly IncidentAnalysisParser _parser;
 
-    public OpenAiLlmIncidentAnalyzer(
+    public OpenRouterLlmIncidentAnalyzer(
         HttpClient httpClient,
         IOptions<LlmOptions> options,
         ISecretRedactor secretRedactor,
@@ -89,26 +89,24 @@ public sealed class OpenAiLlmIncidentAnalyzer : ILlmIncidentAnalyzer
         var requestBody = new
         {
             model = options.Model,
-            instructions = SystemInstructions,
-            input = new[]
+            messages = new[]
             {
-                new
-                {
-                    role = "user",
-                    content = new[]
-                    {
-                        new { type = "input_text", text = sanitizedEvidence }
-                    }
-                }
+                new { role = "system", content = SystemInstructions },
+                new { role = "user", content = sanitizedEvidence }
             },
-            text = new
+            provider = new
             {
-                format = new
+                require_parameters = true,
+                allow_fallbacks = false
+            },
+            response_format = new
+            {
+                type = "json_schema",
+                json_schema = new
                 {
-                    type = "json_schema",
                     name = "incident_analysis",
-                    schema = ResponseSchema,
-                    strict = true
+                    strict = true,
+                    schema = ResponseSchema
                 }
             }
         };
@@ -131,14 +129,14 @@ public sealed class OpenAiLlmIncidentAnalyzer : ILlmIncidentAnalyzer
         }
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-        var outputJson = ExtractOutputText(responseBody);
+        var outputJson = ExtractMessageContent(responseBody);
         return _parser.Parse(outputJson);
     }
 
     private static Uri BuildEndpoint(string baseUrl)
     {
         var normalizedBaseUrl = baseUrl.TrimEnd('/') + "/";
-        return new Uri(new Uri(normalizedBaseUrl, UriKind.Absolute), "responses");
+        return new Uri(new Uri(normalizedBaseUrl, UriKind.Absolute), "chat/completions");
     }
 
     private static string BuildEvidence(IncidentRequest incident)
@@ -155,36 +153,28 @@ public sealed class OpenAiLlmIncidentAnalyzer : ILlmIncidentAnalyzer
         return builder.ToString();
     }
 
-    private static string ExtractOutputText(string responseBody)
+    private static string ExtractMessageContent(string responseBody)
     {
         try
         {
             using var document = JsonDocument.Parse(responseBody);
-            if (!document.RootElement.TryGetProperty("output", out var output)
-                || output.ValueKind != JsonValueKind.Array)
+            if (!document.RootElement.TryGetProperty("choices", out var choices)
+                || choices.ValueKind != JsonValueKind.Array)
             {
-                throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene output.");
+                throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene choices.");
             }
 
-            foreach (var outputItem in output.EnumerateArray())
+            foreach (var choice in choices.EnumerateArray())
             {
-                if (!outputItem.TryGetProperty("content", out var content)
-                    || content.ValueKind != JsonValueKind.Array)
+                if (!choice.TryGetProperty("message", out var message)
+                    || !message.TryGetProperty("content", out var content)
+                    || content.ValueKind != JsonValueKind.String
+                    || string.IsNullOrWhiteSpace(content.GetString()))
                 {
                     continue;
                 }
 
-                foreach (var contentItem in content.EnumerateArray())
-                {
-                    if (contentItem.TryGetProperty("type", out var type)
-                        && type.GetString() == "output_text"
-                        && contentItem.TryGetProperty("text", out var text)
-                        && text.ValueKind == JsonValueKind.String
-                        && !string.IsNullOrWhiteSpace(text.GetString()))
-                    {
-                        return text.GetString()!;
-                    }
-                }
+                return content.GetString()!;
             }
         }
         catch (JsonException)
@@ -192,6 +182,6 @@ public sealed class OpenAiLlmIncidentAnalyzer : ILlmIncidentAnalyzer
             throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene JSON válido.");
         }
 
-        throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene texto estructurado.");
+        throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene contenido estructurado.");
     }
 }

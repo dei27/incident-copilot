@@ -32,7 +32,7 @@ La salida mostrará resumen, posibles causas, comprobaciones sugeridas, próximo
 - ASP.NET Core con Razor Pages.
 - `HttpClientFactory` para la integración HTTP.
 - `System.Text.Json` para los contratos JSON.
-- OpenAI Responses API como única integración real, mediante configuración externa.
+- OpenRouter con un modelo gratuito concreto como única integración real, mediante configuración externa.
 - xUnit y facilities de testing de ASP.NET Core cuando correspondan.
 - GitHub Actions para validaciones automatizadas con un proveedor fake.
 
@@ -40,7 +40,7 @@ El MVP no requiere una base de datos ni infraestructura adicional.
 
 ## Arquitectura
 
-La aplicación es un único proyecto ASP.NET Core pequeño. La integración externa está aislada detrás de `ILlmIncidentAnalyzer`, con un adaptador real para OpenAI Responses API y un fake determinista para desarrollo y pruebas. No se planifican microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
+La aplicación es un único proyecto ASP.NET Core pequeño. La integración externa está aislada detrás de `ILlmIncidentAnalyzer`, con un adaptador real para OpenRouter y un fake determinista para desarrollo y pruebas. La aplicación selecciona un solo modelo gratuito y no habilita fallback ni routing entre modelos. No se planifican microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
 
 ## Flujo principal
 
@@ -74,17 +74,17 @@ Se planifican pruebas unitarias para validación, redacción, parsing, JSON inv�
 La configuración se mantiene fuera de Git mediante variables de entorno y/o .NET user-secrets:
 
 ```text
-LLM_API_KEY=<OPENAI_API_KEY>
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-5.6-luna
+LLM_API_KEY=<OPENROUTER_API_KEY>
+LLM_BASE_URL=https://openrouter.ai/api/v1
+LLM_MODEL=google/gemma-4-26b-a4b-it:free
 ```
 
 Nunca se debe colocar una API key real en el repositorio, HTML, logs o capturas.
 
 ## Limitaciones
 
-El proyecto no determinará la causa raíz, no garantizará que la redacción detecte todos los secretos y no evaluará la “calidad del modelo” mediante una puntuación científica. El MVP tampoco incluye historial persistente, autenticación, usuarios, dashboards, RAG, agentes, múltiples proveedores ni despliegue público obligatorio.
+El proyecto no determinará la causa raíz, no garantizará que la redacción detecte todos los secretos y no evaluará la “calidad del modelo” mediante una puntuación científica. El modelo gratuito requiere una cuenta y API key de OpenRouter, y sus límites, disponibilidad, latencia y calidad pueden variar; se incluye para pruebas locales y no se presenta como una garantía de producción. El MVP tampoco incluye historial persistente, autenticación, usuarios, dashboards, RAG, agentes, múltiples proveedores ni despliegue público obligatorio.
 
 ## Estado del proyecto
 
-En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, la pantalla inicial con validación, el contrato estructurado, la redacción heurística, el fake provider y el adaptador real para OpenAI. La pantalla aún no está conectada al análisis, y las pruebas, samples y CI todavía no están implementados.
+En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, la pantalla inicial con validación, el contrato estructurado, la redacción heurística, el fake provider y el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito. La pantalla aún no está conectada al análisis, y las pruebas, samples y CI todavía no están implementados.
