@@ -77,7 +77,7 @@ Las pruebas unitarias cubren validación y normalización de entrada, redacción
 dotnet test tests/IncidentCopilot.Tests/IncidentCopilot.Tests.csproj
 ```
 
-Las pruebas normales y la CI no utilizarán el proveedor LLM real, API keys ni servicios externos.
+Las pruebas normales y la CI no utilizarán el proveedor LLM real, API keys ni servicios externos. El workflow `.github/workflows/ci.yml` reutiliza esta suite con restore, build y test; su presencia no implica que GitHub Actions ya haya ejecutado una corrida exitosa.
 
 ## Configuración
 
@@ -97,4 +97,4 @@ El proyecto no determinará la causa raíz, no garantizará que la redacción de
 
 ## Estado del proyecto
 
-En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider, el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito, pruebas unitarias y de integración, y samples sintéticos evaluados estructuralmente. La CI todavía no está implementada.
+En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider, el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito, pruebas unitarias y de integración, samples sintéticos evaluados estructuralmente y un workflow CI configurado. La documentación no afirma todavía una ejecución verde de GitHub Actions.
