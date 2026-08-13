@@ -17,8 +17,7 @@ builder.Services.AddOptions<LlmOptions>()
         options.Model = configuration[LlmOptions.ModelEnvironmentVariable]
             ?? configuration[$"{LlmOptions.SectionName}:Model"]
             ?? string.Empty;
-    })
-    .ValidateOnStart();
+    });
 
 builder.Services.AddSingleton<IValidateOptions<LlmOptions>, LlmOptionsValidator>();
 builder.Services.AddSingleton<ISecretRedactor, SecretRedactor>();

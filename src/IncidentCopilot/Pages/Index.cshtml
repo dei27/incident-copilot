@@ -28,6 +28,13 @@
         button { background: #1d4ed8; border: 0; border-radius: 6px; color: #fff; cursor: pointer; font: inherit; font-weight: 650; padding: .75rem 1.1rem; }
         button:hover { background: #1e40af; }
         .notice { background: #eff6ff; border-left: 4px solid #2563eb; margin-top: 1.5rem; padding: 1rem; }
+        .error { background: #fff4f2; border-left: 4px solid #b42318; margin-top: 1.5rem; padding: 1rem; }
+        .analysis { border-top: 1px solid #dbe2ea; margin-top: 2rem; padding-top: 1.5rem; }
+        .analysis-section { border-top: 1px solid #edf0f4; margin-top: 1.25rem; padding-top: 1.25rem; }
+        .analysis-section h3 { color: #1f2937; margin-bottom: .5rem; }
+        .analysis-section p { margin-top: 0; white-space: pre-wrap; }
+        ul { margin: .5rem 0 0; padding-left: 1.35rem; }
+        .warning { color: #7a341e; }
     </style>
 </head>
 <body>
@@ -68,11 +75,75 @@
                 <button type="submit">Analizar incidente</button>
             </form>
 
-            @if (Model.IsSubmitted)
+            @if (Model.AnalysisError is not null)
             {
-                <section class="notice" aria-live="polite">
-                    <h2>Solicitud recibida</h2>
-                    <p>El análisis todavía no está conectado a un proveedor. Esta pantalla solo valida y normaliza la entrada.</p>
+                <section class="error" aria-live="assertive" role="alert">
+                    <h2>No se pudo completar el análisis</h2>
+                    <p>@Model.AnalysisError.UserMessage</p>
+                    @if (Model.AnalysisError.CanRetry)
+                    {
+                        <p> Puedes volver a intentarlo más tarde.</p>
+                    }
+                </section>
+            }
+
+            @if (Model.Analysis is not null)
+            {
+                <section class="analysis" aria-labelledby="analysis-title" aria-live="polite">
+                    <h2 id="analysis-title">Resultado del análisis</h2>
+                    <p class="notice">Las posibles causas son hipótesis basadas en la evidencia suministrada; deben comprobarse antes de realizar cambios.</p>
+
+                    <section class="analysis-section" aria-labelledby="summary-title">
+                        <h3 id="summary-title">Resumen</h3>
+                        <p>@Model.Analysis.Summary</p>
+                    </section>
+
+                    <section class="analysis-section" aria-labelledby="causes-title">
+                        <h3 id="causes-title">Posibles causas</h3>
+                        <ul>
+                            @foreach (var cause in Model.Analysis.PossibleCauses ?? Enumerable.Empty<string>())
+                            {
+                                <li>@cause</li>
+                            }
+                        </ul>
+                    </section>
+
+                    <section class="analysis-section" aria-labelledby="checks-title">
+                        <h3 id="checks-title">Comprobaciones sugeridas</h3>
+                        <ul>
+                            @foreach (var check in Model.Analysis.SuggestedChecks ?? Enumerable.Empty<string>())
+                            {
+                                <li>@check</li>
+                            }
+                        </ul>
+                    </section>
+
+                    <section class="analysis-section" aria-labelledby="steps-title">
+                        <h3 id="steps-title">Próximos pasos</h3>
+                        <ul>
+                            @foreach (var step in Model.Analysis.NextSteps ?? Enumerable.Empty<string>())
+                            {
+                                <li>@step</li>
+                            }
+                        </ul>
+                    </section>
+
+                    <section class="analysis-section" aria-labelledby="warnings-title">
+                        <h3 id="warnings-title">Advertencias</h3>
+                        @if (Model.Analysis.Warnings is { Count: > 0 })
+                        {
+                            <ul class="warning">
+                                @foreach (var warning in Model.Analysis.Warnings)
+                                {
+                                    <li>@warning</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>No se registraron advertencias adicionales.</p>
+                        }
+                    </section>
                 </section>
             }
         </section>

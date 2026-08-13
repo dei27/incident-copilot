@@ -18,7 +18,7 @@ Ante un timeout, un error HTTP o una consulta lenta, un desarrollador necesita o
 
 ## MVP
 
-El MVP incluye una interfaz web mínima con campos para título, síntomas y logs o contexto técnico. La pantalla actual valida y normaliza la entrada, pero todavía no ejecuta el análisis externo. El flujo completo planificado será:
+El MVP incluye una interfaz web mínima con campos para título, síntomas y logs o contexto técnico. La pantalla actual valida y normaliza la entrada, ejecuta el análisis mediante el proveedor configurado y presenta el resultado estructurado o un error controlado. El flujo es:
 
 ```text
 entrada → validación → redacción de secretos → LLM → respuesta estructurada → validación → presentación
@@ -53,7 +53,7 @@ El flujo completo planificado es:
 5. La respuesta se convierte y valida como `IncidentAnalysis`.
 6. La interfaz presenta el resultado o un error controlado.
 
-El adaptador real ya prepara ese payload con un JSON Schema estricto y pasa la respuesta por el parser local. La pantalla actual todavía no invoca el adaptador.
+El adaptador real prepara ese payload con un JSON Schema estricto y pasa la respuesta por el parser local. La pantalla invoca la abstracción común, por lo que el fake puede sustituir al proveedor real en pruebas futuras.
 
 La redacción será una medida preventiva y no una garantía infalible. La aplicación deberá comunicar esa limitación sin conservar innecesariamente el secreto original.
 
@@ -61,7 +61,7 @@ Los fallos del proveedor se convierten en mensajes controlados: configuración i
 
 ## Interfaz
 
-La pantalla inicial implementada es un formulario Razor limpio y funcional con título, síntomas, contexto técnico, logs opcionales y mensajes de validación. Un envío válido muestra un placeholder; todavía no se llama a ningún proveedor ni se presenta un análisis real. Las capturas se añadirán únicamente cuando exista una UI terminada y puedan mostrar comportamiento real.
+La pantalla inicial implementada es un formulario Razor limpio y funcional con título, síntomas, contexto técnico, logs opcionales y mensajes de validación. Un envío válido muestra resumen, posibles causas, comprobaciones sugeridas, próximos pasos y advertencias, o un mensaje de error controlado. Las capturas se añadirán únicamente cuando exista evidencia visual real.
 
 ## Ejemplos sintéticos
 
@@ -89,4 +89,4 @@ El proyecto no determinará la causa raíz, no garantizará que la redacción de
 
 ## Estado del proyecto
 
-En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, la pantalla inicial con validación, el contrato estructurado, la redacción heurística, el fake provider y el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito. La pantalla aún no está conectada al análisis, y las pruebas, samples y CI todavía no están implementados.
+En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider y el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito. Las pruebas, samples y CI todavía no están implementados.
