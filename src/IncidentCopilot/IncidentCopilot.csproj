@@ -5,6 +5,7 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>IncidentCopilot-Local</UserSecretsId>
   </PropertyGroup>
 
 </Project>
