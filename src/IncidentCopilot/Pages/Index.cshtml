@@ -1,0 +1,81 @@
+@page
+@model IncidentCopilot.Pages.IndexModel
+@{
+    ViewData["Title"] = "Incident Copilot";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        :root { color-scheme: light; font-family: system-ui, sans-serif; line-height: 1.5; }
+        body { background: #f5f7fb; color: #1f2937; margin: 0; }
+        main { margin: 0 auto; max-width: 760px; padding: 3rem 1.25rem; }
+        .card { background: #fff; border: 1px solid #dbe2ea; border-radius: 12px; padding: 2rem; box-shadow: 0 8px 24px rgb(15 23 42 / 8%); }
+        h1, h2 { color: #111827; margin-top: 0; }
+        .intro { color: #4b5563; margin-bottom: 2rem; }
+        .field { margin-bottom: 1.25rem; }
+        label { display: block; font-weight: 650; margin-bottom: .4rem; }
+        input, textarea { border: 1px solid #b8c2cf; border-radius: 6px; box-sizing: border-box; font: inherit; padding: .7rem .8rem; width: 100%; }
+        textarea { min-height: 7rem; resize: vertical; }
+        input:focus, textarea:focus { border-color: #2563eb; outline: 3px solid rgb(37 99 235 / 18%); }
+        .hint { color: #6b7280; font-size: .9rem; margin: .3rem 0 0; }
+        .validation-summary-errors, .field-validation-error { color: #b42318; font-size: .92rem; }
+        .validation-summary-errors { margin-bottom: 1rem; }
+        .validation-summary-valid, .field-validation-valid { display: none; }
+        button { background: #1d4ed8; border: 0; border-radius: 6px; color: #fff; cursor: pointer; font: inherit; font-weight: 650; padding: .75rem 1.1rem; }
+        button:hover { background: #1e40af; }
+        .notice { background: #eff6ff; border-left: 4px solid #2563eb; margin-top: 1.5rem; padding: 1rem; }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="card" aria-labelledby="page-title">
+            <h1 id="page-title">Incident Copilot</h1>
+            <p class="intro">Organiza la evidencia de un incidente técnico sintético para preparar su análisis.</p>
+
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" role="alert"></div>
+
+                <div class="field">
+                    <label asp-for="Input.Title">Título</label>
+                    <input asp-for="Input.Title" maxlength="@IncidentRequest.MaxTitleLength" autocomplete="off" />
+                    <span asp-validation-for="Input.Title"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Input.Symptoms">Síntomas</label>
+                    <textarea asp-for="Input.Symptoms" maxlength="@IncidentRequest.MaxSymptomsLength"></textarea>
+                    <span asp-validation-for="Input.Symptoms"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Input.TechnicalContext">Contexto técnico</label>
+                    <textarea asp-for="Input.TechnicalContext" maxlength="@IncidentRequest.MaxTechnicalContextLength"></textarea>
+                    <p class="hint">Opcional. Incluye componentes, entorno o cambios recientes relevantes.</p>
+                    <span asp-validation-for="Input.TechnicalContext"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Input.Logs">Logs / contexto técnico adicional</label>
+                    <textarea asp-for="Input.Logs" maxlength="@IncidentRequest.MaxLogsLength"></textarea>
+                    <p class="hint">Opcional. Usa únicamente datos sintéticos y evita credenciales.</p>
+                    <span asp-validation-for="Input.Logs"></span>
+                </div>
+
+                <button type="submit">Analizar incidente</button>
+            </form>
+
+            @if (Model.IsSubmitted)
+            {
+                <section class="notice" aria-live="polite">
+                    <h2>Solicitud recibida</h2>
+                    <p>El análisis todavía no está conectado a un proveedor. Esta pantalla solo valida y normaliza la entrada.</p>
+                </section>
+            }
+        </section>
+    </main>
+</body>
+</html>

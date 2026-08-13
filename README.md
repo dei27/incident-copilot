@@ -18,7 +18,7 @@ Ante un timeout, un error HTTP o una consulta lenta, un desarrollador necesita o
 
 ## MVP
 
-El MVP incluirá una interfaz web mínima con campos para título, síntomas y logs o contexto técnico. El flujo planificado será:
+El MVP incluye una interfaz web mínima con campos para título, síntomas y logs o contexto técnico. La pantalla actual valida y normaliza la entrada, pero todavía no ejecuta el análisis externo. El flujo completo planificado será:
 
 ```text
 entrada → validación → redacción de secretos → LLM → respuesta estructurada → validación → presentación
@@ -29,7 +29,7 @@ La salida mostrará resumen, posibles causas, comprobaciones sugeridas, próximo
 ## Tecnologías
 
 - .NET 10 y C# 14.
-- ASP.NET Core con Razor Pages o MVC simple.
+- ASP.NET Core con Razor Pages.
 - `HttpClientFactory` para la integración HTTP.
 - `System.Text.Json` para los contratos JSON.
 - xUnit y facilities de testing de ASP.NET Core cuando correspondan.
@@ -54,7 +54,7 @@ La redacción será una medida preventiva y no una garantía infalible. La aplic
 
 ## Interfaz
 
-La interfaz prevista será limpia y funcional: un formulario inicial y una vista de resultado con secciones diferenciadas. Las capturas se añadirán únicamente cuando exista una UI terminada y puedan mostrar comportamiento real.
+La pantalla inicial implementada es un formulario Razor limpio y funcional con título, síntomas, contexto técnico, logs opcionales y mensajes de validación. Un envío válido muestra un placeholder; todavía no se llama a ningún proveedor ni se presenta un análisis real. Las capturas se añadirán únicamente cuando exista una UI terminada y puedan mostrar comportamiento real.
 
 ## Ejemplos sintéticos
 
@@ -74,4 +74,4 @@ El proyecto no determinará la causa raíz, no garantizará que la redacción de
 
 ## Estado del proyecto
 
-Planificado. La implementación todavía no ha comenzado y el repositorio aún no contiene la aplicación, sus pruebas, samples ni la CI ejecutable.
+En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa del proveedor y la pantalla inicial con validación de entrada. La integración LLM, el análisis estructurado, las pruebas, los samples y la CI aún no están implementados.

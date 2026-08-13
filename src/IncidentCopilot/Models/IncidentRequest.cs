@@ -12,17 +12,17 @@ public sealed class IncidentRequest : IValidatableObject
 
     [Required(AllowEmptyStrings = false, ErrorMessage = "El título es obligatorio.")]
     [StringLength(MaxTitleLength, ErrorMessage = "El título no puede superar los 200 caracteres.")]
-    public string? Title { get; init; }
+    public string? Title { get; set; }
 
     [Required(AllowEmptyStrings = false, ErrorMessage = "Los síntomas son obligatorios.")]
     [StringLength(MaxSymptomsLength, ErrorMessage = "Los síntomas no pueden superar los 4000 caracteres.")]
-    public string? Symptoms { get; init; }
+    public string? Symptoms { get; set; }
 
     [StringLength(MaxTechnicalContextLength, ErrorMessage = "El contexto técnico no puede superar los 6000 caracteres.")]
-    public string? TechnicalContext { get; init; }
+    public string? TechnicalContext { get; set; }
 
     [StringLength(MaxLogsLength, ErrorMessage = "Los logs no pueden superar los 12000 caracteres.")]
-    public string? Logs { get; init; }
+    public string? Logs { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
