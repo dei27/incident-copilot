@@ -1,111 +1,169 @@
 # Incident Copilot
 
-## Descripción
+Analiza incidentes técnicos sintéticos con ayuda de un proveedor LLM y convierte evidencia dispersa en un plan de diagnóstico claro.
 
-Incident Copilot es una aplicación web local y experimental en .NET para analizar incidentes técnicos sintéticos con ayuda de un único proveedor LLM. El proyecto demuestra una integración práctica y responsable de una tecnología nueva aplicada a troubleshooting, no experiencia profesional en inteligencia artificial.
+Incident Copilot es una aplicación web local, pequeña y enfocada en un solo caso de uso. Presenta hipótesis y comprobaciones; no inventa una causa raíz ni reemplaza la validación técnica de una persona.
 
-## Problema
+## Qué puedes hacer
 
-Ante un timeout, un error HTTP o una consulta lenta, un desarrollador necesita organizar la evidencia y decidir qué comprobar. La aplicación produce un análisis estructurado a partir del título, los síntomas y el contexto técnico proporcionados por la persona usuaria.
+- Registrar título, síntomas, contexto técnico y logs.
+- Validar y normalizar la entrada antes del análisis.
+- Redactar posibles secretos antes de enviarlos al proveedor externo.
+- Recibir una respuesta estructurada con:
+  - resumen;
+  - posibles causas;
+  - comprobaciones sugeridas;
+  - próximos pasos;
+  - advertencias.
+- Ver un estado de carga centrado mientras el proveedor procesa la solicitud.
+- Obtener mensajes controlados para configuración inválida, credenciales rechazadas, límites, timeout, indisponibilidad y respuestas inválidas.
 
-## Objetivos
-
-- Consumir una API de LLM mediante HTTP.
-- Validar la entrada y la respuesta JSON.
-- Redactar posibles secretos antes del envío externo.
-- Separar evidencia, hipótesis, comprobaciones y próximos pasos.
-- Mantener el sistema pequeño, local y fácil de revisar.
-
-## MVP
-
-El MVP incluye una interfaz web mínima con campos para título, síntomas y logs o contexto técnico. La pantalla actual valida y normaliza la entrada, ejecuta el análisis mediante el proveedor configurado y presenta el resultado estructurado o un error controlado. El flujo es:
+## Cómo funciona
 
 ```text
-entrada → validación → redacción de secretos → LLM → respuesta estructurada → validación → presentación
+formulario → validación → redacción → OpenRouter → parsing JSON → validación → resultado
 ```
 
-La salida muestra resumen, posibles causas, comprobaciones sugeridas, próximos pasos de diagnóstico y advertencias. El sistema no determina automáticamente una causa raíz ni presenta hipótesis como hechos.
+La aplicación envía únicamente texto sanitizado. La redacción es heurística y preventiva: no garantiza detectar todos los secretos, por lo que deben utilizarse exclusivamente datos sintéticos.
 
-## Tecnologías
+## Inicio rápido
 
-- .NET 10 y C# 14.
-- ASP.NET Core con Razor Pages.
-- `HttpClientFactory` para la integración HTTP.
-- `System.Text.Json` para los contratos JSON.
-- OpenRouter con un modelo gratuito concreto como única integración real, mediante configuración externa.
-- xUnit y facilities de testing de ASP.NET Core cuando correspondan.
-- GitHub Actions para validaciones automatizadas con un proveedor fake.
+### Requisitos
 
-El MVP no requiere una base de datos ni infraestructura adicional.
+- .NET SDK 10.
+- Una API key de OpenRouter para ejecutar análisis reales.
+
+### 1. Configura el proveedor
+
+La configuración recomendada usa .NET User Secrets, fuera del repositorio:
+
+```powershell
+dotnet user-secrets set "Llm:ApiKey" "<OPENROUTER_API_KEY>" --project .\src\IncidentCopilot\IncidentCopilot.csproj
+dotnet user-secrets set "Llm:BaseUrl" "https://openrouter.ai/api/v1" --project .\src\IncidentCopilot\IncidentCopilot.csproj
+dotnet user-secrets set "Llm:Model" "google/gemma-4-26b-a4b-it:free" --project .\src\IncidentCopilot\IncidentCopilot.csproj
+```
+
+También puedes usar un archivo local `src/IncidentCopilot/appsettings.Development.json`:
+
+```json
+{
+  "Llm": {
+    "ApiKey": "<OPENROUTER_API_KEY>",
+    "BaseUrl": "https://openrouter.ai/api/v1",
+    "Model": "google/gemma-4-26b-a4b-it:free"
+  }
+}
+```
+
+Nunca guardes una API key real en un archivo que vaya a GitHub, HTML, logs, capturas o mensajes de error.
+
+### 2. Ejecuta la aplicación
+
+Desde la raíz del repositorio:
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+dotnet run --project .\src\IncidentCopilot\IncidentCopilot.csproj
+```
+
+Abre la dirección indicada por ASP.NET Core, normalmente:
+
+```text
+http://localhost:5000
+```
+
+### 3. Prueba un incidente sintético
+
+Puedes copiar cualquiera de los casos incluidos en `samples/incidents/`. Por ejemplo:
+
+```text
+Título: Timeout al consultar una API
+
+Síntomas: Las solicitudes al servicio de inventario tardan demasiado y algunas terminan con timeout.
+
+Contexto técnico: Aplicación web local de pruebas. El cliente HTTP tiene un timeout de 5 segundos y el servicio de inventario es sintético.
+
+Logs:
+2026-08-13T10:15:00Z request_started route=/synthetic/inventory
+2026-08-13T10:15:04Z upstream_waiting dependency=inventory-synthetic
+2026-08-13T10:15:05Z request_timeout elapsed_ms=5000
+```
 
 ## Arquitectura
 
-La aplicación es un único proyecto ASP.NET Core pequeño. La integración externa está aislada detrás de `ILlmIncidentAnalyzer`, con un adaptador real para OpenRouter y un fake determinista para desarrollo y pruebas. La aplicación selecciona un solo modelo gratuito y no habilita fallback ni routing entre modelos. No incluye microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
+La solución mantiene una única aplicación ASP.NET Core con Razor Pages:
 
-## Flujo principal
+- `ILlmIncidentAnalyzer`: contrato pequeño para aislar el proveedor.
+- `OpenRouterLlmIncidentAnalyzer`: integración HTTP real con OpenRouter.
+- `FakeLlmIncidentAnalyzer`: proveedor determinista para pruebas.
+- `SecretRedactor`: redacción preventiva de tokens, claves, contraseñas, cadenas de conexión y encabezados de autorización.
+- `IncidentAnalysisParser` y `IncidentAnalysisValidator`: parsing y validación del contrato estructurado.
+- Razor Pages: formulario, modal de carga, resultado y errores controlados.
 
-El flujo principal es:
+No se utilizan base de datos, historial persistente, autenticación, Docker, SPA, múltiples proveedores, agentes, RAG ni despliegue obligatorio.
 
-1. La persona introduce un incidente sintético.
-2. La aplicación valida los campos y sus límites.
-3. Se intentan detectar y reemplazar tokens, API keys, contraseñas, cadenas de conexión y encabezados de autorización.
-4. El texto sanitizado se envía al proveedor configurado.
-5. La respuesta se convierte y valida como `IncidentAnalysis`.
-6. La interfaz presenta el resultado o un error controlado.
+## Seguridad y privacidad
 
-El adaptador real prepara ese payload con un JSON Schema estricto y pasa la respuesta por el parser local. La pantalla invoca la abstracción común, por lo que el fake puede sustituir al proveedor real en pruebas futuras.
+- Los samples son completamente sintéticos.
+- La entrada se limita y valida antes del análisis.
+- La redacción ocurre antes de la llamada externa.
+- Las respuestas de error no exponen el cuerpo bruto de la API ni la API key.
+- La API key debe permanecer en User Secrets, variables de entorno o configuración local excluida.
+- La redacción no es infalible: no introduzcas secretos reales.
 
-La redacción es una medida preventiva y no una garantía infalible. La aplicación comunica esa limitación y no conserva innecesariamente el secreto original.
+## Pruebas
 
-Los fallos del proveedor se convierten en mensajes controlados: configuración inválida, credenciales rechazadas, permisos insuficientes, límite temporal, indisponibilidad, timeout, cancelación, respuesta vacía o respuesta con formato inválido. Los mensajes no muestran el cuerpo bruto de la respuesta ni detalles de la API key.
+Las pruebas cubren validación de entrada, normalización, redacción, configuración, parsing JSON, contrato de análisis, errores del proveedor, fake provider y flujo web completo.
 
-## Interfaz
+Ejecuta la suite con:
 
-La pantalla inicial implementada es un formulario Razor limpio y funcional con título, síntomas, contexto técnico, logs opcionales y mensajes de validación. Un envío válido muestra resumen, posibles causas, comprobaciones sugeridas, próximos pasos y advertencias, o un mensaje de error controlado. Las capturas se añadirán únicamente cuando exista evidencia visual real.
-
-## Ejemplos sintéticos
-
-El repositorio incluye casos públicos completamente sintéticos de timeout de API, respuesta HTTP 429, consulta SQL lenta, excepción de referencia nula y configuración inválida en `samples/incidents/`. No contienen datos de empleadores ni credenciales reales.
-
-La evaluación automatizada comprueba que estén presentes los cinco archivos esperados, que cada entrada cumpla el contrato y sus límites, que no contenga patrones de secretos conocidos y que el parser rechace JSON inválido. La calidad semántica de las hipótesis y los pasos de diagnóstico requiere revisión manual; no se publican benchmarks ni puntuaciones científicas.
-
-## Testing
-
-Las pruebas unitarias cubren validación y normalización de entrada, redacción de secretos, parsing y contrato JSON, configuración, clasificación de errores y fake provider. Las pruebas de integración cubren el POST Razor completo con fake provider, resultado estructurado, entrada inválida y respuesta inválida. Se ejecutan con:
-
-```text
-dotnet test tests/IncidentCopilot.Tests/IncidentCopilot.Tests.csproj
+```powershell
+dotnet test .\tests\IncidentCopilot.Tests\IncidentCopilot.Tests.csproj
 ```
 
-Las pruebas normales y la CI no utilizarán el proveedor LLM real, API keys ni servicios externos. El workflow `.github/workflows/ci.yml` reutiliza esta suite con restore, build y test; su presencia no implica que GitHub Actions ya haya ejecutado una corrida exitosa.
+La CI ejecuta restore, build y tests con el fake provider. No requiere una API key ni llama al proveedor LLM real.
 
-## Ejecución local
+## Samples y evaluación
 
-1. Configura `LLM_API_KEY`, `LLM_BASE_URL` y `LLM_MODEL` fuera del repositorio.
-2. Inicia la aplicación:
+`samples/incidents/` contiene cinco casos sintéticos:
 
-```text
-dotnet run --project src/IncidentCopilot/IncidentCopilot.csproj
+- timeout de API;
+- respuesta HTTP 429;
+- consulta SQL lenta;
+- excepción de referencia nula;
+- configuración inválida.
+
+La evaluación automatizada verifica estructura, campos, límites, ausencia de patrones de secretos conocidos y rechazo de JSON inválido. La calidad semántica de las hipótesis se revisa manualmente; no se publican puntuaciones científicas inventadas.
+
+## Solución de problemas
+
+### “La configuración del proveedor falta o no es válida”
+
+Comprueba que existan `ApiKey`, `BaseUrl` y `Model`, y ejecuta la aplicación en `Development`:
+
+```powershell
+$env:ASPNETCORE_ENVIRONMENT = "Development"
+dotnet run --project .\src\IncidentCopilot\IncidentCopilot.csproj
 ```
 
-3. Abre la URL mostrada por ASP.NET Core y envía un incidente sintético. La configuración faltante se muestra como un error controlado al intentar analizar.
+### “El puerto 5000 ya está en uso”
 
-## Configuración
+Cierra la instancia anterior con `Ctrl+C` o inicia la aplicación en otro puerto:
 
-La configuración se mantiene fuera de Git mediante variables de entorno y/o .NET user-secrets:
-
-```text
-LLM_API_KEY=<OPENROUTER_API_KEY>
-LLM_BASE_URL=https://openrouter.ai/api/v1
-LLM_MODEL=google/gemma-4-26b-a4b-it:free
+```powershell
+dotnet run --project .\src\IncidentCopilot\IncidentCopilot.csproj --urls http://localhost:5001
 ```
 
-Nunca se debe colocar una API key real en el repositorio, HTML, logs o capturas.
+### El proveedor rechaza la solicitud
 
-## Limitaciones
-
-El proyecto no determinará la causa raíz, no garantizará que la redacción detecte todos los secretos y no evaluará la “calidad del modelo” mediante una puntuación científica. El modelo gratuito requiere una cuenta y API key de OpenRouter, y sus límites, disponibilidad, latencia y calidad pueden variar; se incluye para pruebas locales y no se presenta como una garantía de producción. El MVP tampoco incluye historial persistente, autenticación, usuarios, dashboards, RAG, agentes, múltiples proveedores ni despliegue público obligatorio.
+Verifica que la API key sea válida, que el modelo configurado esté disponible y que no se haya alcanzado el límite de uso del proveedor.
 
 ## Estado del proyecto
 
-MVP local completado en código y validado localmente. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider, el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito, pruebas unitarias y de integración, samples sintéticos evaluados estructuralmente y un workflow CI configurado. La documentación no afirma una ejecución verde de GitHub Actions ni garantiza disponibilidad o calidad del nivel gratuito.
+MVP local funcional y validado. Incluye formulario web, redacción preventiva, análisis estructurado, proveedor real OpenRouter, fake provider, manejo de errores, indicador de carga, pruebas unitarias, pruebas de integración, samples sintéticos y CI.
+
+El modelo gratuito se incluye para aprendizaje y pruebas locales. Su disponibilidad, latencia, límites y calidad pueden variar; el proyecto no lo presenta como una garantía de producción.
+
+## Licencia
+
+Este repositorio no declara todavía una licencia pública.
