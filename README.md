@@ -2,11 +2,11 @@
 
 ## Descripción
 
-Incident Copilot será una aplicación web local y experimental en .NET para analizar incidentes técnicos sintéticos con ayuda de un único proveedor LLM. El proyecto busca demostrar una integración práctica y responsable de una tecnología nueva aplicada a troubleshooting, no experiencia profesional en inteligencia artificial.
+Incident Copilot es una aplicación web local y experimental en .NET para analizar incidentes técnicos sintéticos con ayuda de un único proveedor LLM. El proyecto demuestra una integración práctica y responsable de una tecnología nueva aplicada a troubleshooting, no experiencia profesional en inteligencia artificial.
 
 ## Problema
 
-Ante un timeout, un error HTTP o una consulta lenta, un desarrollador necesita organizar la evidencia y decidir qué comprobar. La aplicación propondrá un análisis estructurado a partir del título, los síntomas y el contexto técnico proporcionados por la persona usuaria.
+Ante un timeout, un error HTTP o una consulta lenta, un desarrollador necesita organizar la evidencia y decidir qué comprobar. La aplicación produce un análisis estructurado a partir del título, los síntomas y el contexto técnico proporcionados por la persona usuaria.
 
 ## Objetivos
 
@@ -24,7 +24,7 @@ El MVP incluye una interfaz web mínima con campos para título, síntomas y log
 entrada → validación → redacción de secretos → LLM → respuesta estructurada → validación → presentación
 ```
 
-La salida mostrará resumen, posibles causas, comprobaciones sugeridas, próximos pasos de diagnóstico y advertencias. El sistema no determinará automáticamente una causa raíz ni presentará hipótesis como hechos.
+La salida muestra resumen, posibles causas, comprobaciones sugeridas, próximos pasos de diagnóstico y advertencias. El sistema no determina automáticamente una causa raíz ni presenta hipótesis como hechos.
 
 ## Tecnologías
 
@@ -40,11 +40,11 @@ El MVP no requiere una base de datos ni infraestructura adicional.
 
 ## Arquitectura
 
-La aplicación es un único proyecto ASP.NET Core pequeño. La integración externa está aislada detrás de `ILlmIncidentAnalyzer`, con un adaptador real para OpenRouter y un fake determinista para desarrollo y pruebas. La aplicación selecciona un solo modelo gratuito y no habilita fallback ni routing entre modelos. No se planifican microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
+La aplicación es un único proyecto ASP.NET Core pequeño. La integración externa está aislada detrás de `ILlmIncidentAnalyzer`, con un adaptador real para OpenRouter y un fake determinista para desarrollo y pruebas. La aplicación selecciona un solo modelo gratuito y no habilita fallback ni routing entre modelos. No incluye microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
 
 ## Flujo principal
 
-El flujo completo planificado es:
+El flujo principal es:
 
 1. La persona introduce un incidente sintético.
 2. La aplicación valida los campos y sus límites.
@@ -55,7 +55,7 @@ El flujo completo planificado es:
 
 El adaptador real prepara ese payload con un JSON Schema estricto y pasa la respuesta por el parser local. La pantalla invoca la abstracción común, por lo que el fake puede sustituir al proveedor real en pruebas futuras.
 
-La redacción será una medida preventiva y no una garantía infalible. La aplicación deberá comunicar esa limitación sin conservar innecesariamente el secreto original.
+La redacción es una medida preventiva y no una garantía infalible. La aplicación comunica esa limitación y no conserva innecesariamente el secreto original.
 
 Los fallos del proveedor se convierten en mensajes controlados: configuración inválida, credenciales rechazadas, permisos insuficientes, límite temporal, indisponibilidad, timeout, cancelación, respuesta vacía o respuesta con formato inválido. Los mensajes no muestran el cuerpo bruto de la respuesta ni detalles de la API key.
 
@@ -79,6 +79,17 @@ dotnet test tests/IncidentCopilot.Tests/IncidentCopilot.Tests.csproj
 
 Las pruebas normales y la CI no utilizarán el proveedor LLM real, API keys ni servicios externos. El workflow `.github/workflows/ci.yml` reutiliza esta suite con restore, build y test; su presencia no implica que GitHub Actions ya haya ejecutado una corrida exitosa.
 
+## Ejecución local
+
+1. Configura `LLM_API_KEY`, `LLM_BASE_URL` y `LLM_MODEL` fuera del repositorio.
+2. Inicia la aplicación:
+
+```text
+dotnet run --project src/IncidentCopilot/IncidentCopilot.csproj
+```
+
+3. Abre la URL mostrada por ASP.NET Core y envía un incidente sintético. La configuración faltante se muestra como un error controlado al intentar analizar.
+
 ## Configuración
 
 La configuración se mantiene fuera de Git mediante variables de entorno y/o .NET user-secrets:
@@ -97,4 +108,4 @@ El proyecto no determinará la causa raíz, no garantizará que la redacción de
 
 ## Estado del proyecto
 
-En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider, el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito, pruebas unitarias y de integración, samples sintéticos evaluados estructuralmente y un workflow CI configurado. La documentación no afirma todavía una ejecución verde de GitHub Actions.
+MVP local completado en código y validado localmente. La aplicación contiene el host ASP.NET Core, la configuración externa, el formulario conectado al pipeline, el contrato estructurado, la redacción heurística, el fake provider, el adaptador real para OpenRouter con Gemma 4 26B A4B gratuito, pruebas unitarias y de integración, samples sintéticos evaluados estructuralmente y un workflow CI configurado. La documentación no afirma una ejecución verde de GitHub Actions ni garantiza disponibilidad o calidad del nivel gratuito.
