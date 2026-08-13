@@ -155,13 +155,22 @@ public sealed class OpenRouterLlmIncidentAnalyzer : ILlmIncidentAnalyzer
 
     private static string ExtractMessageContent(string responseBody)
     {
+        if (string.IsNullOrWhiteSpace(responseBody))
+        {
+            throw new IncidentAnalysisParseException(
+                IncidentAnalysisParseFailureKind.EmptyResponse,
+                "La respuesta del proveedor está vacía.");
+        }
+
         try
         {
             using var document = JsonDocument.Parse(responseBody);
             if (!document.RootElement.TryGetProperty("choices", out var choices)
                 || choices.ValueKind != JsonValueKind.Array)
             {
-                throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene choices.");
+                throw new IncidentAnalysisParseException(
+                    IncidentAnalysisParseFailureKind.InvalidFormat,
+                    "La respuesta del proveedor no contiene choices.");
             }
 
             foreach (var choice in choices.EnumerateArray())
@@ -179,9 +188,13 @@ public sealed class OpenRouterLlmIncidentAnalyzer : ILlmIncidentAnalyzer
         }
         catch (JsonException)
         {
-            throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene JSON válido.");
+            throw new IncidentAnalysisParseException(
+                IncidentAnalysisParseFailureKind.InvalidJson,
+                "La respuesta del proveedor no contiene JSON válido.");
         }
 
-        throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene contenido estructurado.");
+        throw new IncidentAnalysisParseException(
+            IncidentAnalysisParseFailureKind.EmptyResponse,
+            "La respuesta del proveedor no contiene contenido estructurado.");
     }
 }

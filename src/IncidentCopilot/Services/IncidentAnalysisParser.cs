@@ -17,7 +17,9 @@ public sealed class IncidentAnalysisParser
     {
         if (string.IsNullOrWhiteSpace(json))
         {
-            throw new IncidentAnalysisParseException("La respuesta del proveedor está vacía.");
+            throw new IncidentAnalysisParseException(
+                IncidentAnalysisParseFailureKind.EmptyResponse,
+                "La respuesta del proveedor está vacía.");
         }
 
         IncidentAnalysis? analysis;
@@ -28,17 +30,22 @@ public sealed class IncidentAnalysisParser
         }
         catch (JsonException)
         {
-            throw new IncidentAnalysisParseException("La respuesta del proveedor no contiene JSON válido.");
+            throw new IncidentAnalysisParseException(
+                IncidentAnalysisParseFailureKind.InvalidJson,
+                "La respuesta del proveedor no contiene JSON válido.");
         }
         catch (NotSupportedException)
         {
-            throw new IncidentAnalysisParseException("La respuesta del proveedor no tiene un formato compatible.");
+            throw new IncidentAnalysisParseException(
+                IncidentAnalysisParseFailureKind.InvalidFormat,
+                "La respuesta del proveedor no tiene un formato compatible.");
         }
 
         var errors = IncidentAnalysisValidator.GetErrors(analysis);
         if (errors.Count > 0)
         {
             throw new IncidentAnalysisParseException(
+                IncidentAnalysisParseFailureKind.ContractViolation,
                 $"La respuesta del proveedor no cumple el contrato de análisis: {string.Join(" ", errors)}");
         }
 

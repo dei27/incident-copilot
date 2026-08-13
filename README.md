@@ -57,6 +57,8 @@ El adaptador real ya prepara ese payload con un JSON Schema estricto y pasa la r
 
 La redacción será una medida preventiva y no una garantía infalible. La aplicación deberá comunicar esa limitación sin conservar innecesariamente el secreto original.
 
+Los fallos del proveedor se convierten en mensajes controlados: configuración inválida, credenciales rechazadas, permisos insuficientes, límite temporal, indisponibilidad, timeout, cancelación, respuesta vacía o respuesta con formato inválido. Los mensajes no muestran el cuerpo bruto de la respuesta ni detalles de la API key.
+
 ## Interfaz
 
 La pantalla inicial implementada es un formulario Razor limpio y funcional con título, síntomas, contexto técnico, logs opcionales y mensajes de validación. Un envío válido muestra un placeholder; todavía no se llama a ningún proveedor ni se presenta un análisis real. Las capturas se añadirán únicamente cuando exista una UI terminada y puedan mostrar comportamiento real.

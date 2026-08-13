@@ -23,6 +23,7 @@ builder.Services.AddOptions<LlmOptions>()
 builder.Services.AddSingleton<IValidateOptions<LlmOptions>, LlmOptionsValidator>();
 builder.Services.AddSingleton<ISecretRedactor, SecretRedactor>();
 builder.Services.AddSingleton<IncidentAnalysisParser>();
+builder.Services.AddSingleton<IIncidentAnalysisErrorMapper, IncidentAnalysisErrorMapper>();
 builder.Services.AddHttpClient<OpenRouterLlmIncidentAnalyzer>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
