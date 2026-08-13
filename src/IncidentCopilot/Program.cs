@@ -1,4 +1,5 @@
 using IncidentCopilot.Configuration;
+using IncidentCopilot.Security;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ builder.Services.AddOptions<LlmOptions>()
     .ValidateOnStart();
 
 builder.Services.AddSingleton<IValidateOptions<LlmOptions>, LlmOptionsValidator>();
+builder.Services.AddSingleton<ISecretRedactor, SecretRedactor>();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
