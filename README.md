@@ -69,13 +69,13 @@ Se prevén casos públicos de timeout de API, respuesta HTTP 429, consulta SQL l
 
 ## Testing
 
-Las pruebas unitarias cubren validación y normalización de entrada, redacción de secretos, parsing y contrato JSON, configuración, clasificación de errores y fake provider. Se ejecutan con:
+Las pruebas unitarias cubren validación y normalización de entrada, redacción de secretos, parsing y contrato JSON, configuración, clasificación de errores y fake provider. Las pruebas de integración cubren el POST Razor completo con fake provider, resultado estructurado, entrada inválida y respuesta inválida. Se ejecutan con:
 
 ```text
 dotnet test tests/IncidentCopilot.Tests/IncidentCopilot.Tests.csproj
 ```
 
-Las pruebas de integración cubrirán el flujo web con el proveedor fake. Las pruebas normales y la CI no utilizarán el proveedor LLM real, API keys ni servicios externos.
+Las pruebas normales y la CI no utilizarán el proveedor LLM real, API keys ni servicios externos.
 
 ## Configuración
 

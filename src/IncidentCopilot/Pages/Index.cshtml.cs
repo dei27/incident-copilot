@@ -1,4 +1,5 @@
 using IncidentCopilot.Models;
+using IncidentCopilot.Security;
 using IncidentCopilot.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -9,13 +10,16 @@ public sealed class IndexModel : PageModel
 {
     private readonly ILlmIncidentAnalyzer _analyzer;
     private readonly IIncidentAnalysisErrorMapper _errorMapper;
+    private readonly ISecretRedactor _secretRedactor;
 
     public IndexModel(
         ILlmIncidentAnalyzer analyzer,
-        IIncidentAnalysisErrorMapper errorMapper)
+        IIncidentAnalysisErrorMapper errorMapper,
+        ISecretRedactor secretRedactor)
     {
         _analyzer = analyzer;
         _errorMapper = errorMapper;
+        _secretRedactor = secretRedactor;
     }
 
     [BindProperty]
@@ -52,6 +56,7 @@ public sealed class IndexModel : PageModel
             return;
         }
 
+        Input = RedactInput(Input);
         IsSubmitted = true;
 
         try
@@ -62,5 +67,21 @@ public sealed class IndexModel : PageModel
         {
             AnalysisError = _errorMapper.Map(exception, cancellationToken);
         }
+    }
+
+    private IncidentRequest RedactInput(IncidentRequest request)
+    {
+        return new IncidentRequest
+        {
+            Title = _secretRedactor.Redact(request.Title ?? string.Empty).SanitizedText,
+            Symptoms = _secretRedactor.Redact(request.Symptoms ?? string.Empty).SanitizedText,
+            TechnicalContext = RedactOptional(request.TechnicalContext),
+            Logs = RedactOptional(request.Logs)
+        };
+    }
+
+    private string? RedactOptional(string? value)
+    {
+        return value is null ? null : _secretRedactor.Redact(value).SanitizedText;
     }
 }
