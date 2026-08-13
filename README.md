@@ -32,6 +32,7 @@ La salida mostrará resumen, posibles causas, comprobaciones sugeridas, próximo
 - ASP.NET Core con Razor Pages.
 - `HttpClientFactory` para la integración HTTP.
 - `System.Text.Json` para los contratos JSON.
+- OpenAI Responses API como única integración real, mediante configuración externa.
 - xUnit y facilities de testing de ASP.NET Core cuando correspondan.
 - GitHub Actions para validaciones automatizadas con un proveedor fake.
 
@@ -39,9 +40,11 @@ El MVP no requiere una base de datos ni infraestructura adicional.
 
 ## Arquitectura
 
-La aplicación planificada será un único proyecto ASP.NET Core pequeño. La integración externa estará aislada detrás de una abstracción equivalente a `ILlmIncidentAnalyzer`, con una implementación real y otra fake para desarrollo y pruebas. No se planifican microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
+La aplicación es un único proyecto ASP.NET Core pequeño. La integración externa está aislada detrás de `ILlmIncidentAnalyzer`, con un adaptador real para OpenAI Responses API y un fake determinista para desarrollo y pruebas. No se planifican microservicios, una SPA, un sistema de plugins, múltiples proveedores ni capas arquitectónicas ceremoniales.
 
 ## Flujo principal
+
+El flujo completo planificado es:
 
 1. La persona introduce un incidente sintético.
 2. La aplicación valida los campos y sus límites.
@@ -49,6 +52,8 @@ La aplicación planificada será un único proyecto ASP.NET Core pequeño. La in
 4. El texto sanitizado se envía al proveedor configurado.
 5. La respuesta se convierte y valida como `IncidentAnalysis`.
 6. La interfaz presenta el resultado o un error controlado.
+
+El adaptador real ya prepara ese payload con un JSON Schema estricto y pasa la respuesta por el parser local. La pantalla actual todavía no invoca el adaptador.
 
 La redacción será una medida preventiva y no una garantía infalible. La aplicación deberá comunicar esa limitación sin conservar innecesariamente el secreto original.
 
@@ -66,7 +71,15 @@ Se planifican pruebas unitarias para validación, redacción, parsing, JSON inv�
 
 ## Configuración
 
-La implementación utilizará variables de entorno y/o .NET user-secrets para mantener fuera de Git las credenciales y la configuración del proveedor. Los valores de configuración se documentarán con placeholders cuando existan instrucciones ejecutables. La implementación todavía no ha comenzado; las instrucciones locales se añadirán cuando existan.
+La configuración se mantiene fuera de Git mediante variables de entorno y/o .NET user-secrets:
+
+```text
+LLM_API_KEY=<OPENAI_API_KEY>
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-5.6-luna
+```
+
+Nunca se debe colocar una API key real en el repositorio, HTML, logs o capturas.
 
 ## Limitaciones
 
@@ -74,4 +87,4 @@ El proyecto no determinará la causa raíz, no garantizará que la redacción de
 
 ## Estado del proyecto
 
-En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa del proveedor y la pantalla inicial con validación de entrada. La integración LLM, el análisis estructurado, las pruebas, los samples y la CI aún no están implementados.
+En implementación inicial. La aplicación contiene el host ASP.NET Core, la configuración externa, la pantalla inicial con validación, el contrato estructurado, la redacción heurística, el fake provider y el adaptador real para OpenAI. La pantalla aún no está conectada al análisis, y las pruebas, samples y CI todavía no están implementados.

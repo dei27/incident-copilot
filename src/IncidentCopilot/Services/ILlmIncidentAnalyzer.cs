@@ -4,7 +4,7 @@ namespace IncidentCopilot.Services;
 
 public interface ILlmIncidentAnalyzer
 {
-    Task<string> AnalyzeAsync(
+    Task<IncidentAnalysis> AnalyzeAsync(
         IncidentRequest incident,
         CancellationToken cancellationToken = default);
 }

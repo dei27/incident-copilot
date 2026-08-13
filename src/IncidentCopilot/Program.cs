@@ -1,4 +1,5 @@
 using IncidentCopilot.Configuration;
+using IncidentCopilot.Services;
 using IncidentCopilot.Security;
 using Microsoft.Extensions.Options;
 
@@ -21,6 +22,13 @@ builder.Services.AddOptions<LlmOptions>()
 
 builder.Services.AddSingleton<IValidateOptions<LlmOptions>, LlmOptionsValidator>();
 builder.Services.AddSingleton<ISecretRedactor, SecretRedactor>();
+builder.Services.AddSingleton<IncidentAnalysisParser>();
+builder.Services.AddHttpClient<OpenAiLlmIncidentAnalyzer>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddTransient<ILlmIncidentAnalyzer>(services =>
+    services.GetRequiredService<OpenAiLlmIncidentAnalyzer>());
 builder.Services.AddRazorPages();
 
 var app = builder.Build();

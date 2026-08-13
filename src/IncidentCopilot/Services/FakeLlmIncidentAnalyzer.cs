@@ -25,8 +25,10 @@ public sealed class FakeLlmIncidentAnalyzer : ILlmIncidentAnalyzer
 
     private readonly string _responseJson;
     private readonly Exception? _failure;
+    private readonly IncidentAnalysisParser _parser;
 
     public FakeLlmIncidentAnalyzer(
+        IncidentAnalysisParser? parser = null,
         string? responseJson = null,
         Exception? failure = null)
     {
@@ -39,9 +41,10 @@ public sealed class FakeLlmIncidentAnalyzer : ILlmIncidentAnalyzer
 
         _responseJson = responseJson ?? DefaultResponseJson;
         _failure = failure;
+        _parser = parser ?? new IncidentAnalysisParser();
     }
 
-    public Task<string> AnalyzeAsync(
+    public Task<IncidentAnalysis> AnalyzeAsync(
         IncidentRequest incident,
         CancellationToken cancellationToken = default)
     {
@@ -49,15 +52,22 @@ public sealed class FakeLlmIncidentAnalyzer : ILlmIncidentAnalyzer
 
         if (cancellationToken.IsCancellationRequested)
         {
-            return Task.FromCanceled<string>(cancellationToken);
+            return Task.FromCanceled<IncidentAnalysis>(cancellationToken);
         }
 
         if (_failure is not null)
         {
-            return Task.FromException<string>(_failure);
+            return Task.FromException<IncidentAnalysis>(_failure);
         }
 
-        return Task.FromResult(_responseJson);
+        try
+        {
+            return Task.FromResult(_parser.Parse(_responseJson));
+        }
+        catch (IncidentAnalysisParseException exception)
+        {
+            return Task.FromException<IncidentAnalysis>(exception);
+        }
     }
 }
 
@@ -68,6 +78,7 @@ public static class FakeLlmIncidentAnalyzerServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.AddSingleton<IncidentAnalysisParser>();
         services.AddSingleton<ILlmIncidentAnalyzer, FakeLlmIncidentAnalyzer>();
         return services;
     }
